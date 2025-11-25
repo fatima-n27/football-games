@@ -1,16 +1,22 @@
 1. 
-SELECT date AS year 
-	,home_team
-	,away_team
-	,count(*) AS "no. goals"
-FROM goalscorers
-WHERE date >= 1900
-	AND date <= 2000
-GROUP BY date
-	,home_team
-	,away_team
+SELECT 
+    AVG(no_goals) AS avg_goals
+FROM (
+    SELECT date AS year,
+        ,home_team
+        ,away_team
+        count(*) AS no_goals
+    FROM goalscorers
+    WHERE year >=1900 
+	  AND year <= 2000
+    GROUP BY date
+	     ,home_team
+             ,away_team
+) AS per_game;
 
-2. SELECT winner AS country
+
+2. 
+SELECT winner AS country
 	,count(winner) AS "no. of shootout wins"
 FROM shootouts
 GROUP BY winner
@@ -19,14 +25,13 @@ ORDER BY winner
 3. date, home_team, away_team
 
 4. 
-
 WITH home_scores AS (
     SELECT
-        date,
-        home_team,
-        away_team,
-        home_team AS “scored by”,
-        COUNT(team) AS “goals in game”
+        date
+        , home_team,
+        , away_team
+        , home_team AS “scored by”
+        , COUNT(team) AS “goals in game”
     FROM goalscorers
     WHERE home_team = team
     GROUP BY
@@ -38,10 +43,10 @@ WITH home_scores AS (
 
 away_scores AS (
     SELECT
-        date,
-        home_team,
-        away_team,
-        away_team AS “scored by”,
+        date
+        , home_team
+        , away_team
+        , away_team AS “scored by”,
         COUNT(team) AS “goals in game”
     FROM goalscorers
     WHERE away_team = team
