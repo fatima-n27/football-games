@@ -2,10 +2,10 @@
 SELECT 
     AVG(no_goals) AS avg_goals
 FROM (
-    SELECT date AS year,
+    SELECT date AS year
         ,home_team
         ,away_team
-        count(*) AS no_goals
+        ,count(*) AS no_goals
     FROM goalscorers
     WHERE year >=1900 
 	  AND year <= 2000
