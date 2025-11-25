@@ -22,7 +22,15 @@ FROM shootouts
 GROUP BY winner
 ORDER BY winner
 
-3. date, home_team, away_team
+3. 
+ALTER TABLE goalscorers
+ADD PRIMARY KEY (date, home_team, away_team)
+
+ALTER TABLE results
+ADD PRIMARY KEY (date, home_team, away_team)
+
+ALTER TABLE shooutouts
+ADD PRIMARY KEY (date, home_team, away_team)
 
 4. 
 WITH home_scores AS (
