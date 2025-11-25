@@ -1,0 +1,133 @@
+1. 
+SELECT date AS year 
+	,home_team
+	,away_team
+	,count(*) AS "no. goals"
+FROM goalscorers
+WHERE date >= 1900
+	AND date <= 2000
+GROUP BY date
+	,home_team
+	,away_team
+
+2. SELECT winner AS country
+	,count(winner) AS "no. of shootout wins"
+FROM shootouts
+GROUP BY winner
+ORDER BY winner
+
+3. date, home_team, away_team
+
+4. 
+
+WITH home_scores AS (
+    SELECT
+        date,
+        home_team,
+        away_team,
+        home_team AS “scored by”,
+        COUNT(team) AS “goals in game”
+    FROM goalscorers
+    WHERE home_team = team
+    GROUP BY
+        date,
+        home_team,
+        away_team
+    HAVING COUNT(team) = 1
+),
+
+away_scores AS (
+    SELECT
+        date,
+        home_team,
+        away_team,
+        away_team AS “scored by”,
+        COUNT(team) AS “goals in game”
+    FROM goalscorers
+    WHERE away_team = team
+    GROUP BY
+        date,
+        home_team,
+        away_team
+    HAVING COUNT(team) = 1
+),
+
+one_penalty_games AS (
+    SELECT
+        a.date,
+        a.home_team,
+        a.away_team,
+        h.”goals in game” AS home_score,
+        a.”goals in game” AS away_score
+    FROM away_scores AS a
+    INNER JOIN home_scores AS h
+        ON a.date = h.date
+       AND a.home_team = h.home_team
+       AND a.away_team = h.away_team
+)
+
+SELECT
+    s.date,
+    op.home_team,
+    op.away_team,
+    op.home_score,
+    op.away_score,
+    s.winner
+FROM one_penalty_games AS op
+INNER JOIN shootout AS s
+    ON op.date = s.date 
+   AND op.home_team = s.home_team
+   AND op.away_team = s.away_team
+ORDER BY s.date ASC;
+
+5. 
+WITH joined AS (
+    SELECT g.date
+	,t.tournament
+	,g.scorer
+    FROM goalscorers AS g
+	INNER JOIN results AS t ON g.DATE = t.DATE
+		AND g.home_team = t.home_team
+		AND g.away_team = t.away_team
+),
+
+goals_by_player AS (
+    SELECT date
+	,tournament
+	,scorer
+	,COUNT(*) AS score
+    FROM joined
+    GROUP BY date
+	,tournament
+	,scorer
+),
+
+max_score_per_group AS (
+    SELECT date
+	,tournament
+	,MAX(score) AS max_goals
+    FROM goalscorer
+    GROUP BY DATE
+	,tournament
+),
+
+total_scores_tournament AS (
+    SELECT date
+	,tournament
+	,SUM(score) AS total_goals_tournament
+    FROM goals_by_player
+    GROUP BY date
+	,tournament
+)
+
+SELECT gp.date
+	,gp.tournament
+	,gp.scorer
+	,gp.score
+	,ROUND(100.0 * gp.score / t.total_goals_tournament, 1) AS "Percentage of score"
+FROM goals_by_player as gp
+INNER JOIN max_score_per_group as m ON gp.DATE = m.DATE
+	AND gp.tournament = m.tournament
+	AND gp.score = m.max_goals
+INNER JOIN total_scores_tournament as t ON gp.DATE = t.DATE
+	AND gp.tournament = t.tournament;
